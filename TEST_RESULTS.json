@@ -1,0 +1,54 @@
+{
+  "browser_integration_tests": {
+    "file_mode_shows_launcher_instructions": true,
+    "file_mode_no_browser_api_attempt": true,
+    "server_autodetection": true,
+    "missing_key_diagnostic": true,
+    "key_saved_outside_browser": true,
+    "saved_key_reused_after_reload": true,
+    "connection_via_server_success": true,
+    "auth_error_distinct_from_cors": true,
+    "timeout_diagnostic": true,
+    "csrf_auto_refresh_after_server_restart": true,
+    "invalid_csrf_rejected": true,
+    "ai_candidate_selection": true,
+    "all_12_ads_placed": true,
+    "format_and_page_tag_cleanup": true,
+    "geometry_validation": true,
+    "key_excluded_from_plan": true,
+    "api_failure_falls_back": true,
+    "low_confidence_falls_back": true,
+    "undo_redo_valid": true,
+    "forget_removes_persistent_key": true,
+    "no_direct_browser_requests_to_typesafe": true,
+    "javascript_errors": [],
+    "provider_used_only_mock_key": true
+  },
+  "provider_error_classification": {
+    "authentication": {
+      "status": 401,
+      "code": "upstream_http"
+    },
+    "rate_limit": {
+      "status": 429,
+      "code": "upstream_http"
+    },
+    "timeout": {
+      "status": 504,
+      "code": "upstream_timeout"
+    },
+    "dns": {
+      "status": 502,
+      "code": "dns"
+    },
+    "tls_certificate": {
+      "status": 502,
+      "code": "tls_certificate"
+    }
+  },
+  "javascript_syntax_passed": true,
+  "python_syntax_passed": true,
+  "posix_launcher_syntax_passed": true,
+  "live_typesafe_request_tested": false,
+  "credentials_embedded": false
+}
