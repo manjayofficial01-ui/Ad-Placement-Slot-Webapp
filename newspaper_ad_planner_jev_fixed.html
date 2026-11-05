@@ -22,7 +22,7 @@
 <p class="help">Jev chooses among the best-coverage valid layouts. AI sends candidate ad details and preferences to TypeSafe and can incur usage charges. Geometry and CC caps remain enforced by code. Failures or confidence below 65% use the best local layout.</p>
 <div id="jevStatus" class="jev-status" role="status">Checking server…</div></section><div id="inventoryAnchor"><section class="panel" id="inventoryPanel"><div class="panel-head" id="inventoryHead"><h2>Ad inventory <span id="remainingBadge" class="badge">0</span></h2><div class="controls"><button id="float" title="Float or dock inventory">Float</button><button id="minimize" title="Minimize or expand" class="hide">−</button></div></div><p class="help">Ads ready to place. Drag ⋮⋮ onto a page, or select a page and Add. Drag a placed ad here to return it. Drag the floating title bar to move this panel; resize its corner.</p><div id="inventory" class="inventory"></div></section></div>
 <section class="panel"><div class="panel-head"><h2>Already placed <span id="placedBadge" class="badge">0</span></h2></div><p class="help">Grouped by page. Drag an ad on the newspaper to choose its column and vertical position. Move sends it to another page; Can Place or dragging it onto Ad Inventory returns it without deleting it.</p><div id="placed" class="placed-list"></div></section>
-<section class="panel"><details><summary>Manual vs automatic rules</summary><p>Manual: either a bigger or smaller ad may be above the other. There are no size-order, pairing, 260 CC or full-page-exception restrictions on manual placement. Physical page bounds, no overlaps, whole-column/cm snapping, and no floating always apply.</p><p>Your grab point is preserved when moving an already placed ad. The preview follows both horizontal and vertical movement. Unsupported drops settle downward. Colliding ads are pushed upward when space permits; every resulting placement must have full bottom support. Red preview means that drop cannot be accepted.</p><p>No floating means the entire bottom edge is supported by the page bottom or ads beneath it. Moving/removing a supporting ad first tries to keep other ads where they are; if needed they settle vertically with their column positions and order preserved. If that cannot produce full support, the operation is refused, not silently reordered widest-first. Move upper ads first if necessary.</p><p>Automatic: defaults to 260 CC per normal page; at most two exception pages may use 384 CC (50 cm single-page ads use up to 400 CC on an exceptional 50 cm page). It processes wider ads first, tries your listed pairs, and does not add a wider ad above narrower supporting ads. Two-ad pairs can differ in height; equal heights are preferred. The 3+2+1 triple requires equal heights. Several greedy strategies are compared; this is not an exhaustive optimal packing solver.</p><p>“Place remaining” preserves existing manual work and skips over-cap pages. “Rebuild” deliberately replaces the layout with automatic ordering, after confirmation. Undo can restore the previous arrangement.</p><p>The usable model is exactly 8 columns × 48 cm (32 × 48 cm). Margins/gutters are not subtracted. Print output is a reduced A3 planning preview, not press artwork. Work is saved in this browser; JSON backups are portable. Optional Jev uses the included local server. Offline planning makes no API requests. No external JavaScript libraries.</p></details></section>
+<section class="panel"><details><summary>Manual vs automatic rules</summary><p>Manual: either a bigger or smaller ad may be above the other. There are no size-order, pairing, 260 CC or full-page-exception restrictions on manual placement. An exceptional 50 cm ad fills the full height of its own columns, and the free columns beside it may hold other ads (up to the 50 cm page height). Physical page bounds, no overlaps, whole-column/cm snapping, and no floating always apply.</p><p>Your grab point is preserved when moving an already placed ad. The preview follows both horizontal and vertical movement. Unsupported drops settle downward. Colliding ads are pushed upward when space permits; every resulting placement must have full bottom support. Red preview means that drop cannot be accepted.</p><p>No floating means the entire bottom edge is supported by the page bottom or ads beneath it. Moving/removing a supporting ad first tries to keep other ads where they are; if needed they settle vertically with their column positions and order preserved. If that cannot produce full support, the operation is refused, not silently reordered widest-first. Move upper ads first if necessary.</p><p>Automatic: defaults to 260 CC per normal page; at most two exception pages may use 384 CC (a 50 cm ad turns its page into an exceptional 50 cm page with a 400 CC cap, and other ads fill the columns left free beside it). It processes wider ads first, tries your listed pairs, and does not add a wider ad above narrower supporting ads. Two-ad pairs can differ in height; equal heights are preferred. The 3+2+1 triple requires equal heights. Several greedy strategies are compared; this is not an exhaustive optimal packing solver.</p><p>“Place remaining” preserves existing manual work and skips over-cap pages. “Rebuild” deliberately replaces the layout with automatic ordering, after confirmation. Undo can restore the previous arrangement.</p><p>The usable model is exactly 8 columns × 48 cm (32 × 48 cm). Margins/gutters are not subtracted. Print output is a reduced A3 planning preview, not press artwork. Work is saved in this browser; JSON backups are portable. Optional Jev uses the included local server. Offline planning makes no API requests. No external JavaScript libraries.</p></details></section>
 </aside><main><div class="notice"><b>Manual freedom:</b> bigger or smaller ads can go above or below each other. Drag controls both directions. Every ad needs full bottom support. Collisions can push ads upward; affected ads then settle downward.</div><div id="stats" class="stats"></div><div class="toolbar"><div class="row"><button id="showInventory">Show inventory</button><button id="undo">↶ Undo</button><button id="redo">↷ Redo</button><button id="clear">Unplace all</button></div><div class="row"><span class="muted">Page view</span><button id="zoomOut" aria-label="Zoom out pages" title="Zoom out pages">−</button><button id="zoomReset" aria-label="Reset page zoom" title="Reset to 100%">100%</button><button id="zoomIn" aria-label="Zoom in pages" title="Zoom in pages">+</button></div><div class="row"><button id="export">Save JSON</button><button id="import">Open JSON</button><button id="csv">Export CSV</button><button id="print">Print / PDF</button></div></div><input id="file" type="file" accept="application/json,.json" class="hide"><div id="pages" class="pages"></div><section class="panel results-panel" style="margin-top:18px"><h2>Page-by-page advertisement placement results</h2><p class="help">Actual page order, then largest advertisements first within each page (CC descending; ties keep input order). Continuous numbering; original spelling and size notation. Input (Pg n) tags are labels, not placement constraints.</p><div class="row"><label for="resultPage">Show</label><select id="resultPage"><option value="all">All pages</option></select><button id="copyResults">Copy results</button><button id="downloadResults">Download TXT</button></div><textarea readonly id="placementResults" class="result-text" aria-label="Advertisement placement results"></textarea><div id="pageResults"></div><p id="unplacedResults" class="help"></p></section><section class="panel report-panel" style="margin-top:18px"><h2>Publication report</h2><div id="report"></div><button id="copy">Copy report</button><div id="legend" class="legend"></div><p class="help">Placed advertisements only. CC = columns × height in cm.</p></section></main></div><footer>Offline planning + local-server Jev · Manual freedom with no floating · Automatic rules are separate</footer><div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -236,20 +236,26 @@ function manualProposal(id, page, x = null, wantY = null) {
 
   // Exceptional 50 cm single-page advertisement logic:
   if (a.h > 48) {
-    // 50 cm ad must be the sole advertisement on the page
-    if (target.length > 0) return null;
-    const final = [{ id, page, x: 0, y: 0 }];
-    return {
-      placements: base.filter(p => p.page !== page).concat(final),
-      pos: { x: 0, y: 0 },
-      settled: true
-    };
+    // The exceptional ad fills the whole page height of its columns, so its strip
+    // must be completely free. Other ads may share the page in the remaining columns.
+    const xs = x === null
+      ? Array.from({ length: 9 - a.w }, (_, i) => i)
+      : [Math.max(0, Math.min(8 - a.w, Math.round(x)))];
+    for (const xx of xs) {
+      const pageSet = target.concat([{ id, page, x: xx, y: 0 }]);
+      if (!geometryOK(pageSet)) continue;
+      return {
+        placements: base.filter(p => p.page !== page).concat(pageSet),
+        pos: { x: xx, y: 0 },
+        settled: true
+      };
+    }
+    return null;
   }
 
-  // Normal ads cannot be added to a page that already has a 50 cm ad:
-  if (target.some(p => adBy(p.id)?.h > 48)) return null;
-
-  const targetH = 48;
+  // Normal ads may share a page that already hosts a 50 cm ad: they use the
+  // free columns beside it, up to the exceptional 50 cm page height.
+  const targetH = target.some(p => adBy(p.id)?.h > 48) ? 50 : 48;
   x = x === null ? null : Math.max(0, Math.min(8 - a.w, Math.round(x)));
   wantY = wantY === null ? null : Math.max(0, Math.min(targetH - a.h, Math.round(wantY)));
   let final;
@@ -296,9 +302,9 @@ function placeManual(id, page, x = null, wantY = null) {
   const r = manualProposal(id, page, x, wantY);
   if (!r) {
     if (ad.h > 48) {
-      toast('50 cm advertisement is an exceptional single-page ad and must be placed on an empty page.');
+      toast(`The ${ad.h} cm advertisement needs ${ad.w} completely free columns at full page height. Move the ads in the way or choose another page.`);
     } else if (onPage(page).some(p => adBy(p.id)?.h > 48)) {
-      toast('This page is already dedicated to a 50 cm single-page advertisement.');
+      toast('This page hosts a 50 cm advertisement. Only the free columns beside it can take more ads.');
     } else {
       toast('No supported arrangement fits. Original layout kept.');
     }
@@ -307,7 +313,7 @@ function placeManual(id, page, x = null, wantY = null) {
   const n = clone(state);
   n.placements = r.placements;
   commit(n);
-  toast(ad.h > 48 ? 'Single-page advertisement placed. Page readjusted to 50 cm.' : 'Advertisement placed. Every ad remains fully supported.');
+  toast(ad.h > 48 ? `${ad.h} cm advertisement placed. Page readjusted to 50 cm; free columns beside it accept more ads.` : 'Advertisement placed. Every ad remains fully supported.');
   return true;
 }
 
@@ -419,19 +425,25 @@ function autoPlan(base, selectedMode = null) {
     const compare = (a, b) => mode.order === 'short' ? a.h - b.h || a.order - b.order : mode.order === 'tall' ? b.h - a.h || a.order - b.order : a.order - b.order;
 
     function candidates(a) {
-      // 50 cm exceptional ad: must go on an empty page
+      // 50 cm exceptional ad: fills the full page height of its columns, so its
+      // strip must be completely free. Empty pages are preferred; otherwise any
+      // page with enough free columns beside its ads qualifies.
       if (a.h > 48) {
-        for (const page of state.enabled) {
+        const pages = [...state.enabled].sort((p, q) => (byPage.get(p).length ? 1 : 0) - (byPage.get(q).length ? 1 : 0) || p - q);
+        for (const page of pages) {
           if (state.placeAdsByPageTag && a.pageTag && a.pageTag !== page) continue;
           const existing = byPage.get(page);
-          if (existing.length > 0) continue; // Single page ad requires empty page
-          return {
-            score: -50000 + page * 0.001,
-            placements: [{ id: a.id, page, x: 0, y: 0 }],
-            addCC: area(a),
-            page,
-            bundle: 1
-          };
+          const s = skyline(existing);
+          for (let x = 0; x <= 8 - a.w; x++) {
+            if (s.slice(x, x + a.w).some(v => v > 0)) continue;
+            return {
+              score: -50000 + page * 0.001 + x * 0.002,
+              placements: [{ id: a.id, page, x, y: 0 }],
+              addCC: area(a),
+              page,
+              bundle: 1
+            };
+          }
         }
         return null;
       }
@@ -462,10 +474,13 @@ function autoPlan(base, selectedMode = null) {
       for (const page of state.enabled) {
         if (state.placeAdsByPageTag && a.pageTag && a.pageTag !== page) continue;
         const existing = byPage.get(page);
-        // If page is occupied by a 50 cm ad, no other ad can fit on it:
-        if (existing.some(p => adBy(p.id)?.h > 48)) continue;
-
-        const s = skyline(existing), current = cc.get(page), cap = capFor(page);
+        // A page hosting a 50 cm ad is 50 cm tall; normal ads may use the free
+        // columns beside it up to that full height.
+        const pageH = existing.some(p => adBy(p.id)?.h > 48) ? 50 : 48;
+        const s = skyline(existing), current = cc.get(page);
+        // capFor reads committed placements only, so derive the cap from the
+        // working set: a page carrying a 50 cm ad gets the 400 CC exceptional cap.
+        const cap = pageH > 48 ? 400 : capFor(page);
         if (current >= cap) continue;
         for (const bundle of bundles) {
           if (state.placeAdsByPageTag && bundle.some(b => b.pageTag && b.pageTag !== page)) continue;
@@ -478,7 +493,7 @@ function autoPlan(base, selectedMode = null) {
             let xx = x, valid = true, placements = [];
             for (const b of bundle) {
               const pos = { x: xx, y };
-              if (y + b.h > 48 || !widthOK(b, pos, existing)) {
+              if (y + b.h > pageH || !widthOK(b, pos, existing)) {
                 valid = false;
                 break;
               }
@@ -512,7 +527,7 @@ function autoPlan(base, selectedMode = null) {
       if (c.bundle > 1) pairCount++;
     }
 
-    // 1. Place 50 cm exceptional single-page ads first (they require an empty page)
+    // 1. Place 50 cm exceptional single-page ads first (empty pages preferred)
     for (const a of state.ads.filter(a => a.h > 48).sort((a, b) => b.w - a.w || a.order - b.order)) {
       if (used.has(a.id)) continue;
       const c = candidates(a);
@@ -700,11 +715,9 @@ function validate(s) {
   for (const page of s.enabled) {
     const ps = s.placements.filter(p => p.page === page);
     const pageH = ps.some(p => s.ads.find(a => a.id === p.id)?.h > 48) ? 50 : 48;
-    if (pageH > 48) {
-      if (ps.length !== 1 || !s.ads.find(a => a.id === ps[0].id) || s.ads.find(a => a.id === ps[0].id).h <= 48 || ps[0].x !== 0 || ps[0].y !== 0) {
-        throw Error('50 cm advertisement must be the sole placement on its page.');
-      }
-    }
+    // A 50 cm page may host several ads: the exceptional ad fills the full height
+    // of its columns and companions share the remaining columns. Bounds, overlap
+    // and full bottom support are enforced below for every placement.
     const g = pageGrid(ps, s.ads, pageH);
     for (const p of ps) {
       if (!supported(s.ads.find(a => a.id === p.id), p, g)) throw Error('Floating advertisement.');
@@ -866,7 +879,7 @@ function placeTaggedAdsDirectly(targetAds = null) {
 
   // Place ads page-by-page
   for (const [page, pageAds] of pageMap.entries()) {
-    // Sort: 50 cm ads first (must be sole placement), then wider ads, then taller ads
+    // Sort: 50 cm ads first (they need free full-height columns), then wider ads, then taller ads
     pageAds.sort((a, b) => {
       if (a.h > 48 && b.h <= 48) return -1;
       if (b.h > 48 && a.h <= 48) return 1;
@@ -875,30 +888,37 @@ function placeTaggedAdsDirectly(targetAds = null) {
 
     for (const a of pageAds) {
       const onTarget = n.placements.filter(p => p.page === page);
+      const onAd = p => n.ads.find(x => x.id === p.id);
+      const targetHas50 = onTarget.some(p => onAd(p)?.h > 48);
+      const targetH = targetHas50 ? 50 : 48;
 
-      // Exceptional 50 cm single-page ad:
+      // Exceptional 50 cm ad: fills the whole page height of its columns, so its
+      // strip must be completely free; ads beside it may keep their columns.
       if (a.h > 48) {
-        if (onTarget.length === 0) {
-          n.placements.push({ id: a.id, page, x: 0, y: 0 });
+        const s = skyline(onTarget);
+        for (let x = 0; x <= 8 - a.w; x++) {
+          if (s.slice(x, x + a.w).some(v => v > 0)) continue;
+          if (!geometryOK([...onTarget, { id: a.id, page, x, y: 0 }])) continue;
+          n.placements.push({ id: a.id, page, x, y: 0 });
           placedCount++;
+          break;
         }
         continue;
       }
 
-      // Normal ad: cannot place on a page dedicated to a 50 cm ad
-      if (onTarget.some(p => n.ads.find(x => x.id === p.id)?.h > 48)) continue;
+      // Normal ad: may share a page that hosts a 50 cm ad, using the free columns
+      // beside it up to the exceptional 50 cm page height.
+      const currentCC = onTarget.reduce((t, p) => t + area(onAd(p)), 0);
+      if (currentCC + area(a) > (targetHas50 ? 400 : 384)) continue;
 
-      const currentCC = onTarget.reduce((t, p) => t + area(n.ads.find(x => x.id === p.id)), 0);
-      if (currentCC + area(a) > 384) continue;
-
-      const settled = gravity(onTarget, 48, n.ads);
+      const settled = gravity(onTarget, targetH, n.ads);
       const baseTarget = settled || [];
-      const positions = candidatePositions(a, baseTarget, null, null, 48, n.ads);
+      const positions = candidatePositions(a, baseTarget, null, null, targetH, n.ads);
       if (!positions.length) continue;
 
       for (const pos of positions) {
         const candidatePlacements = [...baseTarget, { id: a.id, page, ...pos }];
-        const finalTarget = gravity(candidatePlacements, 48, n.ads);
+        const finalTarget = gravity(candidatePlacements, targetH, n.ads);
         if (finalTarget) {
           n.placements = n.placements.filter(p => p.page !== page).concat(finalTarget);
           placedCount++;
@@ -1266,7 +1286,7 @@ function showDropPreview(e) {
     width: a.w / 8 * 100 + '%',
     height: a.h / targetH * 100 + '%'
   });
-  p.textContent = r ? (a.h > 48 ? 'Full page ' + a.w + '×' + a.h + ' cm' : `Col ${pos.x + 1} · bottom ${pos.y} cm`) : (a.h > 48 ? '50 cm ad needs an empty page' : 'No supported fit');
+  p.textContent = r ? (a.h > 48 ? 'Exceptional ' + a.w + '×' + a.h + ' cm' : `Col ${pos.x + 1} · bottom ${pos.y} cm`) : (a.h > 48 ? 'Needs free full-height columns' : 'No supported fit');
   b.appendChild(p);
 }
 

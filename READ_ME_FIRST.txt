@@ -94,9 +94,12 @@ PRESERVED FEATURES
   tags remain descriptive labels.
 - Exceptional 50 cm single-page advertisements (any column width 1-8 x 50 cm)
   are supported. When booked, a 50 cm ad automatically readjusts the target page
-  to a 50 cm board height (400 CC physical capacity) as an exclusive, sole
-  single-page placement. Multiple advertisements can NEVER stack to 50 cm;
-  normal pages remain strictly capped at 48 cm height (384 CC).
+  to a 50 cm board height (400 CC physical capacity). The exceptional ad fills
+  the full height of its own columns, and the free columns beside it accept
+  other advertisements (manually, automatically, or via page tags) up to the
+  50 cm page height with full bottom support. Multiple normal advertisements
+  can NEVER stack past a page's height; normal pages remain strictly capped
+  at 48 cm height (384 CC).
 
 JEV BEHAVIOR AND LIMITS
 Local code generates multiple valid greedy layouts. Jev chooses between distinct

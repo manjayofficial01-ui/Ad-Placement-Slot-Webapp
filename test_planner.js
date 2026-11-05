@@ -157,7 +157,9 @@ for (const pg of [1, 2, 3, 4]) {
 // ==========================================
 console.log("\nTest Suite 3: Manual Single-Page Constraints for 8x50");
 const tryAddOnP1 = pt.manualProposal('a1', 1, 0, 0);
-assert(tryAddOnP1 === null, "Manual placement refuses adding second ad to 8x50 page");
+assert(tryAddOnP1 === null, "Manual placement refuses an 8-column ad: the 8x50 fills every column");
+const trySmallOnP1 = pt.manualProposal('a3', 1, 7, 0);
+assert(trySmallOnP1 === null, "Manual placement refuses any ad: the 8x50 leaves no free columns");
 
 // ==========================================
 // Test Suite 4: Non-8-column x 50cm ads (any width x 50 is valid)
@@ -331,9 +333,9 @@ pt.setState({ ...stateStack, placements: planStack.ps });
 assert(pt.pageHeight(1) === 48, "Page stays at 48cm even with large normal ads (no 50cm inflation)");
 
 // ==========================================
-// Test Suite 6: 1x50 single column exceptional ad
+// Test Suite 6: 1x50 single column exceptional ad shares its page
 // ==========================================
-console.log("\nTest Suite 6: 1x50 single column exceptional ad");
+console.log("\nTest Suite 6: 1x50 single column exceptional ad shares its page");
 const input1x50 = `TinyTall 1x50 VerticalAd (Pg 1)
 Namaste 6x15 Bank`;
 
@@ -342,12 +344,13 @@ assert(parsed1x50.ads.length === 2, "Parsed 2 ads including 1x50");
 assert(parsed1x50.errors.length === 0, "1x50 parsed without error");
 assert(parsed1x50.ads[0].w === 1 && parsed1x50.ads[0].h === 50, "1x50 has correct dimensions");
 
+// Only page 1 is enabled, so the 6x15 must use the free columns beside the 1x50.
 const state1x50 = {
   version: 3,
   ads: parsed1x50.ads,
   placements: [],
-  pageCount: 2,
-  enabled: [1, 2],
+  pageCount: 1,
+  enabled: [1],
   normalCap: 260,
   fullPages: [],
   today: '2026-11-03',
@@ -357,14 +360,25 @@ const state1x50 = {
 
 pt.setState(state1x50);
 const plan1x50 = pt.autoPlan([]);
-assert(plan1x50.count === 2, "Both ads placed (1x50 on page 1, normal on page 2)");
+assert(plan1x50.count === 2, "Both ads placed (6x15 shares page 1 beside the 1x50)");
 
 const p1_1x50 = plan1x50.ps.filter(p => p.page === 1);
-assert(p1_1x50.length === 1, "Page 1 has exactly 1 ad (the 1x50)");
+assert(p1_1x50.length === 2, "Page 1 hosts both the 1x50 and the 6x15");
+const tallPos = p1_1x50.find(p => parsed1x50.ads.find(a => a.id === p.id).h === 50);
+const sidePos = p1_1x50.find(p => parsed1x50.ads.find(a => a.id === p.id).h === 15);
+assert(tallPos && tallPos.x === 0 && tallPos.y === 0, "1x50 stands at column 1 on the floor");
+assert(sidePos && sidePos.x === 1 && sidePos.y === 0, "6x15 fills the free columns beside the 1x50");
+assert(pt.geometryOK(p1_1x50), "Shared page has full bottom support and no overlaps");
 
 pt.setState({ ...state1x50, placements: plan1x50.ps });
 assert(pt.pageHeight(1) === 50, "Page 1 height is 50 cm for 1x50 ad");
 assert(pt.pageMaxCC(1) === 400, "Page 1 max CC is 400");
+try {
+  pt.validate(pt.getState());
+  assert(true, "validate() accepts a 50 cm page shared by two ads");
+} catch (e) {
+  assert(false, "validate() accepts a 50 cm page shared by two ads — " + e.message);
+}
 
 // ==========================================
 // Test Suite 7: Direct Placement of (Pg n) tagged ads
@@ -409,6 +423,135 @@ assert(pt.pageHeight(4) === 50, "Page 4 height is 50 cm");
 // Verify Page 1 and 2 are empty
 assert(pt.getState().placements.filter(p => p.page === 1).length === 0, "Page 1 is empty as expected");
 assert(pt.getState().placements.filter(p => p.page === 2).length === 0, "Page 2 is empty as expected");
+
+// ==========================================
+// Test Suite 8: 5x50 ad shares its page with ads in the remaining columns
+// ==========================================
+console.log("\nTest Suite 8: 5x50 ad shares its page with ads in the remaining columns");
+
+const inputShare = `BigAd 5x50 Grand Opening (Pg 1)
+SideAd 3x47 Local Bank`;
+
+const parsedShare = pt.parse(inputShare);
+assert(parsedShare.ads.length === 2 && parsedShare.errors.length === 0, "5x50 and 3x47 parsed without error");
+
+const stateShare = {
+  version: 3,
+  ads: parsedShare.ads,
+  placements: [],
+  pageCount: 1,
+  enabled: [1],
+  normalCap: 260,
+  fullPages: [],
+  today: '2026-11-03',
+  input: inputShare,
+  placeAdsByPageTag: true
+};
+
+// 8a. Automatic placement fills the 3 free columns beside the 5x50
+pt.setState(stateShare);
+const planShare = pt.autoPlan([]);
+assert(planShare.count === 2, "Automatic placement places both the 5x50 and the 3x47");
+const p1Share = planShare.ps.filter(p => p.page === 1);
+assert(p1Share.length === 2, "Page 1 hosts the 5x50 and the 3x47 together");
+const share50 = p1Share.find(p => parsedShare.ads.find(a => a.id === p.id).h === 50);
+const shareSide = p1Share.find(p => parsedShare.ads.find(a => a.id === p.id).h === 47);
+assert(share50 && share50.x === 0 && share50.y === 0, "5x50 stands on the floor of columns 1-5");
+assert(shareSide && shareSide.x === 5 && shareSide.y === 0, "3x47 fills the remaining 3 columns beside it");
+assert(pt.geometryOK(p1Share), "Shared page has full bottom support and no overlaps");
+pt.setState({ ...stateShare, placements: planShare.ps });
+assert(pt.pageHeight(1) === 50 && pt.pageMaxCC(1) === 400, "Shared page is an exceptional 50 cm page (400 CC)");
+try {
+  pt.validate(pt.getState());
+  assert(true, "validate() accepts the shared 50 cm page");
+} catch (e) {
+  assert(false, "validate() accepts the shared 50 cm page — " + e.message);
+}
+
+// 8b. Manual: place the 5x50, then fill the leftover space manually
+pt.setState(stateShare);
+assert(pt.placeManual(parsedShare.ads[0].id, 1), "Manual placement accepts the 5x50");
+assert(pt.placeManual(parsedShare.ads[1].id, 1), "Manual placement accepts the 3x47 in the leftover space");
+const manualP1 = pt.getState().placements.filter(p => p.page === 1);
+assert(manualP1.length === 2 && pt.geometryOK(manualP1), "Manual shared page is fully supported");
+const mSide = manualP1.find(p => p.id === parsedShare.ads[1].id);
+assert(mSide && mSide.x === 5 && mSide.y === 0, "Manual 3x47 settles beside the 5x50 at column 6");
+
+// 8c. Manual drop with an explicit column honours a free strip anywhere on the page
+pt.setState({ ...stateShare, placements: [] });
+assert(pt.placeManual(parsedShare.ads[0].id, 1, 3, 0), "5x50 dropped at column 4 when its strip is free");
+assert(pt.getState().placements.some(p => p.id === parsedShare.ads[0].id && p.x === 3 && p.y === 0), "5x50 kept at the dropped column 4");
+assert(pt.placeManual(parsedShare.ads[1].id, 1, 0, 0), "3x47 accepted at columns 1-3 beside the right-standing 5x50");
+assert(pt.geometryOK(pt.getState().placements.filter(p => p.page === 1)), "Explicit-column shared layout is fully supported");
+
+// 8d. No space left beside the 5x50: further ads are refused
+const lateAd = { id: 'a2', agency: 'LateAd', client: 'Late Client', w: 1, h: 10, order: 2, sourceText: 'LateAd 1x10 Late Client' };
+pt.setState({ ...stateShare, ads: [...parsedShare.ads, lateAd], placements: planShare.ps });
+assert(pt.manualProposal('a2', 1, 7, 0) === null, "Refuses a drop when every column is already filled");
+assert(pt.manualProposal('a2', 1) === null, "Strip scan also refuses when the page has no free columns");
+
+// 8e. Companions may stack beside the 50 cm ad up to the 50 cm page height
+const parsedStack50 = pt.parse(`BigAd 5x50 Grand Opening
+LowAd 3x30 Base Client
+TopAd 3x17 Top Client`);
+assert(parsedStack50.ads.length === 3 && parsedStack50.errors.length === 0, "Stacking list parsed");
+pt.setState({
+  version: 3,
+  ads: parsedStack50.ads,
+  placements: [],
+  pageCount: 1,
+  enabled: [1],
+  normalCap: 260,
+  fullPages: [],
+  today: '2026-11-03',
+  input: 'BigAd 5x50 Grand Opening\nLowAd 3x30 Base Client\nTopAd 3x17 Top Client',
+  placeAdsByPageTag: false
+});
+assert(pt.placeManual(parsedStack50.ads[0].id, 1), "5x50 placed for stacking test");
+assert(pt.placeManual(parsedStack50.ads[1].id, 1, 5, 0), "3x30 placed beside the 5x50");
+assert(pt.placeManual(parsedStack50.ads[2].id, 1, 5, 30), "3x17 stacked on the 3x30 beside the 5x50 (top 47 of 50 cm)");
+const stackP1 = pt.getState().placements.filter(p => p.page === 1);
+assert(stackP1.length === 3 && pt.geometryOK(stackP1), "Three ads sharing the 50 cm page are fully supported");
+const overTall = pt.parse(`BigAd 5x50 Grand Opening
+LowAd 3x30 Base Client
+OverAd 3x21 Too Tall Client`);
+pt.setState({
+  version: 3,
+  ads: overTall.ads,
+  placements: [],
+  pageCount: 1,
+  enabled: [1],
+  normalCap: 260,
+  fullPages: [],
+  today: '2026-11-03',
+  input: 'BigAd 5x50 Grand Opening\nLowAd 3x30 Base Client\nOverAd 3x21 Too Tall Client',
+  placeAdsByPageTag: false
+});
+pt.placeManual(overTall.ads[0].id, 1);
+pt.placeManual(overTall.ads[1].id, 1, 5, 0);
+assert(pt.manualProposal(overTall.ads[2].id, 1, 5, 30) === null, "3x21 cannot stack to 51 cm beside the 5x50 (50 cm page limit)");
+
+// 8f. Tagged routing: the 5x50 and a tagged companion share their tagged page
+const inputTagShare = `BigAd 5x50 Grand Opening (Pg 2)
+SideAd 3x47 Local Bank (Pg 2)`;
+const parsedTagShare = pt.parse(inputTagShare);
+assert(parsedTagShare.ads.length === 2 && parsedTagShare.errors.length === 0, "Tagged sharing list parsed");
+pt.setState({
+  version: 3,
+  ads: parsedTagShare.ads,
+  placements: [],
+  pageCount: 3,
+  enabled: [1, 2, 3],
+  normalCap: 260,
+  fullPages: [],
+  today: '2026-11-03',
+  input: inputTagShare,
+  placeAdsByPageTag: true
+});
+const placedTagShare = pt.placeTaggedAdsDirectly();
+assert(placedTagShare === 2, "Tagged 5x50 and tagged 3x47 both placed on their tagged page");
+const tagP2 = pt.getState().placements.filter(p => p.page === 2);
+assert(tagP2.length === 2 && pt.geometryOK(tagP2), "Tagged page 2 hosts the 5x50 and the 3x47 together");
 
 // ==========================================
 // Summary
